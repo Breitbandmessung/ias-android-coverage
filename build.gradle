@@ -1,0 +1,63 @@
+apply plugin: 'com.android.library'
+
+def props = new Properties()
+file("../gradle.properties").withInputStream { props.load(it) }
+
+def versionTag = props.getProperty("version")
+
+android
+{
+    namespace 'com.zafaco.moduleCoverage'
+
+    compileSdkVersion Integer.parseInt(android_compile_sdk_version)
+    buildToolsVersion android_build_tools_version
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    defaultConfig
+    {
+        versionCode Integer.valueOf(System.env.VERSION_CODE ?: 1)
+        versionName "${versionTag}"
+        minSdkVersion Integer.parseInt(android_min_sdk_version)
+        targetSdkVersion Integer.parseInt(android_target_sdk_version)
+        buildConfigField("long", "VERSION_CODE", "${defaultConfig.versionCode}")
+        buildConfigField("String","VERSION_NAME","\"${defaultConfig.versionName}\"")
+    }
+
+
+    buildTypes
+    {
+        debug
+        {
+            minifyEnabled false
+            shrinkResources false
+        }
+        release
+        {
+            minifyEnabled true
+            shrinkResources false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies
+{
+    implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
+
+    implementation project(path: ':ias-android-common')
+
+    implementation 'androidx.multidex:multidex:2.0.1'
+    implementation "androidx.appcompat:appcompat:$androidxAppcompat"
+    implementation "androidx.lifecycle:lifecycle-extensions:2.2.0"
+
+    api "com.google.android.gms:play-services-location:$playServicesVersion"
+    api "com.google.android.gms:play-services-maps:$playServicesMapsVersion"
+
+}
